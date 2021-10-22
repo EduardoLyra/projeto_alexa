@@ -36,6 +36,7 @@ from ask_sdk_model.interfaces.connections import SendRequestDirective
 from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model import Response
 from get_Tokens import Token
+from logica import Time
 
 
 logger = logging.getLogger(__name__)
@@ -93,28 +94,8 @@ class AgendaIntentHandler(AbstractRequestHandler):
         slots = handler_input.request_envelope.request.intent.slots['tempo'].value
         if prox == 'próximo':
             for item in jsonObject['rotina']:
-                if item['hora'][1] != ':':
-                    hora_json = int(item['hora'][0] + item['hora'][1])
-                    min_json = int(item['hora'][3] + item['hora'][4])
-                    if hora_json > hora:
-                        atividade = item['atividade']
-                        horaItem = item['hora']
-                        break
-                    elif hora_json == hora and min_json > minuto:
-                        atividade = item['atividade']
-                        horaItem = item['hora']
-                        break
-                else:
-                    hora_json = int(item['hora'][0])
-                    min_json = int(item['hora'][2] + item['hora'][3])
-                    if hora_json > hora:
-                        atividade = item['atividade']
-                        horaItem = item['hora']
-                        break
-                    elif hora_json == hora and min_json > minuto:
-                        atividade = item['atividade']
-                        horaItem = item['hora']
-                        break
+                h = Time()
+                atividade, horaItem = h.verifica_proximo(item, hora, minuto)
             speak_output = "A sua próxima atividade é {atividade} às {horaItem}.".format(
                 atividade=atividade, horaItem=horaItem)
         else:
@@ -185,18 +166,8 @@ class CriarLembreteIntentHandler(AbstractRequestHandler):
         agora = datetime.datetime.now(timezone(userTimeZone))
 
         for item in jsonObject['rotina']:
-            if item['hora'][1] != ':':
-                horario = agora.replace(
-                    hour=int(item['hora'][0] + item['hora'][1]),
-                    minute=int(item['hora'][3] + item['hora'][4]),
-                    second=0)
-                horario += datetime.timedelta(days=+1)
-            else:
-                horario = agora.replace(
-                    hour=int(item['hora'][0]),
-                    minute=int(item['hora'][2] + item['hora'][3]),
-                    second=0)
-                horario += datetime.timedelta(days=+1)
+            h = Time()
+            horario = h.verifica_hora(item, agora)
             notification_time = horario.strftime("%Y-%m-%dT%H:%M:%S")
             trigger = Trigger(object_type=TriggerType.SCHEDULED_ABSOLUTE, scheduled_time=notification_time,
                               time_zone_id=TIME_ZONE_ID)

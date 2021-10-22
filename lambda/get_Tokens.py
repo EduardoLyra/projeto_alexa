@@ -1,6 +1,5 @@
 import requests
 
-
 class Token():
     def time_zone(self, handler_input):
         self.sys_object = handler_input.request_envelope.context.system
