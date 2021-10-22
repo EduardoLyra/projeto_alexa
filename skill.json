@@ -1,0 +1,46 @@
+{
+  "manifest": {
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "uri": "arn:aws:lambda:us-east-1:122501512554:function:a44a05c4-cf25-43d5-8a86-2d4ee5ef8a38:Release_0"
+        },
+        "interfaces": [],
+        "regions": {
+          "EU": {
+            "endpoint": {
+              "uri": "arn:aws:lambda:eu-west-1:122501512554:function:a44a05c4-cf25-43d5-8a86-2d4ee5ef8a38:Release_0"
+            }
+          },
+          "NA": {
+            "endpoint": {
+              "uri": "arn:aws:lambda:us-east-1:122501512554:function:a44a05c4-cf25-43d5-8a86-2d4ee5ef8a38:Release_0"
+            }
+          },
+          "FE": {
+            "endpoint": {
+              "uri": "arn:aws:lambda:us-west-2:122501512554:function:a44a05c4-cf25-43d5-8a86-2d4ee5ef8a38:Release_0"
+            }
+          }
+        }
+      }
+    },
+    "manifestVersion": "1.0",
+    "permissions": [
+      {
+        "name": "alexa::alerts:reminders:skill:readwrite"
+      }
+    ],
+    "publishingInformation": {
+      "category": "KNOWLEDGE_AND_TRIVIA",
+      "distributionCountries": [],
+      "isAvailableWorldwide": true,
+      "locales": {
+        "pt-BR": {
+          "name": "Alarme geo care"
+        }
+      },
+      "testingInstructions": "Sample Testing Instructions."
+    }
+  }
+}

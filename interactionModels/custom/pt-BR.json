@@ -1,0 +1,73 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "agenda geo care",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "name": "AgendaIntent",
+          "slots": [
+            {
+              "name": "tempo",
+              "type": "AMAZON.DATE"
+            },
+            {
+              "name": "proximo",
+              "type": "Proximo"
+            }
+          ],
+          "samples": [
+            "Quais meus cuidados de {tempo}",
+            "Qual o meu {proximo} compromisso",
+            "{proximo}",
+            "{tempo}",
+            "Qual minha agenda de {tempo}"
+          ]
+        },
+        {
+          "name": "CriarLembreteIntent",
+          "slots": [],
+          "samples": [
+            "definir lembrete"
+          ]
+        }
+      ],
+      "types": [
+        {
+          "values": [
+            {
+              "name": {
+                "value": "Próximo",
+                "synonyms": [
+                  "depois",
+                  "seguinte"
+                ]
+              }
+            }
+          ],
+          "name": "Proximo"
+        }
+      ]
+    }
+  },
+  "version": "45"
+}

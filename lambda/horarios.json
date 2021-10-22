@@ -1,0 +1,48 @@
+{
+    "rotina": [
+        {
+            "hora": "8:30",
+            "atividade": "Banho"
+        },
+        {
+            "hora": "9:00",
+            "atividade": "Troca de curativos"
+        },
+        {
+            "hora": "10:30",
+            "atividade": "Remédio"
+        },
+        {
+            "hora": "12:00",
+            "atividade": "Almoço"
+        },
+        {
+            "hora": "13:30",
+            "atividade": "Banho"
+        },
+        {
+            "hora": "14:00",
+            "atividade": "Troca de curativos"
+        },
+        {
+            "hora": "16:30",
+            "atividade": "Remédio"
+        },
+        {
+            "hora": "17:30",
+            "atividade": "Lanche"
+        },
+        {
+            "hora": "18:00",
+            "atividade": "Banho"
+        },
+        {
+            "hora": "18:30",
+            "atividade": "Troca de curativos"
+        },
+        {
+            "hora": "19:30",
+            "atividade": "Jantar"
+        }
+    ]
+}
