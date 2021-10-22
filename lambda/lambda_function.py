@@ -76,14 +76,8 @@ class AgendaIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         t = Token()
-        url, headers = t.time_zone(handler_input)
-
-        try:
-            r = requests.get(url, headers=headers)
-            res = r.json()
-            logger.info("Device API result: {}".format(str(res)))
-            userTimeZone = res
-        except Exception:
+        userTimeZone = t.time_zone(handler_input)
+        if userTimeZone == "ERROR":
             handler_input.response_builder.speak(
                 "Houve um problema ao conectar com o serviço")
             return handler_input.response_builder.response
@@ -164,7 +158,12 @@ class CriarLembreteIntentHandler(AbstractRequestHandler):
 
         t = Token()
         url_reminder, headers_reminder = t.reminder(handler_input)
-        url_time_zone, headers_time_zone = t.time_zone(handler_input)
+        userTimeZone = t.time_zone(handler_input)
+
+        if userTimeZone == "ERROR":
+            handler_input.response_builder.speak(
+                "Houve um problema ao conectar com o serviço")
+            return handler_input.response_builder.response
 
         if not(requests_envelope.context.system.user.permissions and requests_envelope.context.system.user.permissions.consent_token):
 
@@ -182,16 +181,6 @@ class CriarLembreteIntentHandler(AbstractRequestHandler):
         with open("horarios.json") as jsonFile:
             jsonObject = json.load(jsonFile)
             jsonFile.close()
-
-        try:
-            r = requests.get(url_time_zone, headers=headers_time_zone)
-            res = r.json()
-            logger.info("Device API result: {}".format(str(res)))
-            userTimeZone = res
-        except Exception:
-            handler_input.response_builder.speak(
-                "Houve um problema ao conectar com o serviço")
-            return handler_input.response_builder.response
 
         agora = datetime.datetime.now(timezone(userTimeZone))
 
