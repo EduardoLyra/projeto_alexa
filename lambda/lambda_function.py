@@ -11,14 +11,10 @@
 # => Implementar sitema de respostas;
 
 import logging
-import os
-import pytz
 import requests
-import calendar
 from pytz import timezone
 import datetime
 import json
-import typing
 
 from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.dispatch_components import (
@@ -39,6 +35,7 @@ from ask_sdk_model.interfaces.connections import SendRequestDirective
 
 from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model import Response
+from get_Tokens import Token
 
 
 logger = logging.getLogger(__name__)
@@ -49,6 +46,7 @@ TIME_ZONE_ID = 'America/Sao_Paulo'
 
 ERROR = "Uh Oh. Parece que algo deu errado"
 NOTIFY_MISSING_PERMISSIONS = "Habilite as permissões de lembrete no aplicativo Amazon Alexa para prosseguir."
+
 
 class LaunchRequestHandler(AbstractRequestHandler):
     """Handler for Skill Launch."""
@@ -77,31 +75,22 @@ class AgendaIntentHandler(AbstractRequestHandler):
         return ask_utils.is_intent_name("AgendaIntent")(handler_input)
 
     def handle(self, handler_input):
-        # type: (HandlerInput) -> Response
-        
-        sys_object = handler_input.request_envelope.context.system
-        device_id = sys_object.device.device_id
-        
-        api_endpoint = sys_object.api_endpoint
-        api_access_token = sys_object.api_access_token
-        
-        url = '{api_endpoint}/v2/devices/{device_id}/settings/System.timeZone'.format(api_endpoint=api_endpoint, device_id=device_id)
-        headers = {'Authorization': 'Bearer ' + api_access_token}
-        
-        userTimeZone = ""
-        
+        t = Token()
+        url, headers = t.time_zone(handler_input)
+
         try:
-	        r = requests.get(url, headers=headers)
-	        res = r.json()
-	        logger.info("Device API result: {}".format(str(res)))
-	        userTimeZone = res
+            r = requests.get(url, headers=headers)
+            res = r.json()
+            logger.info("Device API result: {}".format(str(res)))
+            userTimeZone = res
         except Exception:
-	        handler_input.response_builder.speak("Houve um problema ao conectar com o serviço")
-	        return handler_input.response_builder.response
-        
+            handler_input.response_builder.speak(
+                "Houve um problema ao conectar com o serviço")
+            return handler_input.response_builder.response
+
         data = datetime.datetime.now(timezone(userTimeZone))
         ano, mes, dia, hora, minuto = data.year, data.month, data.day, data.hour, data.minute
-        
+
         with open("horarios.json") as jsonFile:
             jsonObject = json.load(jsonFile)
             jsonFile.close()
@@ -132,22 +121,27 @@ class AgendaIntentHandler(AbstractRequestHandler):
                         atividade = item['atividade']
                         horaItem = item['hora']
                         break
-            speak_output = "A sua próxima atividade é {atividade} às {horaItem}.".format(atividade=atividade, horaItem=horaItem)
+            speak_output = "A sua próxima atividade é {atividade} às {horaItem}.".format(
+                atividade=atividade, horaItem=horaItem)
         else:
             ano_desejado, mes_desejado, dia_desejado = slots.split("-")
             difDia = int(dia_desejado) - dia
-            
+
             for item in jsonObject['rotina']:
                 rotina += 'às ' + item['hora'] + ' ' + item['atividade'] + '. '
             if difDia == 0:
-                speak_output = "A sua rotina de hoje é {rotina}".format(rotina=rotina)
+                speak_output = "A sua rotina de hoje é {rotina}".format(
+                    rotina=rotina)
             elif difDia == 1:
-                speak_output = "A sua rotina de amanhã é {rotina}".format(rotina=rotina)
+                speak_output = "A sua rotina de amanhã é {rotina}".format(
+                    rotina=rotina)
             elif difDia == -1:
-                speak_output = "A sua rotina de ontem foi {rotina}".format(rotina=rotina)
+                speak_output = "A sua rotina de ontem foi {rotina}".format(
+                    rotina=rotina)
             else:
                 diaFinal = dia + difDia
-                speak_output = "A sua rotida do dia {diaFinal} é {rotina}".format(diaFinal=diaFinal, rotina=rotina)
+                speak_output = "A sua rotida do dia {diaFinal} é {rotina}".format(
+                    diaFinal=diaFinal, rotina=rotina)
         return (
             handler_input.response_builder
             .speak(speak_output)
@@ -156,7 +150,7 @@ class AgendaIntentHandler(AbstractRequestHandler):
 
 
 class CriarLembreteIntentHandler(AbstractRequestHandler):
-    
+
     def can_handle(self, handler_input):
         # type: (HandlerInput) -> bool
         return is_request_type("IntentRequest")(handler_input) and is_intent_name("CriarLembreteIntent")(handler_input)
@@ -167,18 +161,13 @@ class CriarLembreteIntentHandler(AbstractRequestHandler):
         requests_envelope = handler_input.request_envelope
         response_builder = handler_input.response_builder
         reminder_service = handler_input.service_client_factory.get_reminder_management_service()
-        
-        sys_object = handler_input.request_envelope.context.system
-        device_id = sys_object.device.device_id
 
-        api_endpoint = sys_object.api_endpoint
-        api_access_token = sys_object.api_access_token
-
-        url = '{api_endpoint}/v1/alerts/reminders'.format(api_endpoint=api_endpoint)
-        headers = {'Authorization': 'Bearer ' + api_access_token}
+        t = Token()
+        url_reminder, headers_reminder = t.reminder(handler_input)
+        url_time_zone, headers_time_zone = t.time_zone(handler_input)
 
         if not(requests_envelope.context.system.user.permissions and requests_envelope.context.system.user.permissions.consent_token):
-            
+
             return response_builder.add_directive(
                 SendRequestDirective(
                     name="AskFor",
@@ -193,9 +182,19 @@ class CriarLembreteIntentHandler(AbstractRequestHandler):
         with open("horarios.json") as jsonFile:
             jsonObject = json.load(jsonFile)
             jsonFile.close()
-            
-        agora = datetime.datetime.now(pytz.timezone(TIME_ZONE_ID))
-        
+
+        try:
+            r = requests.get(url_time_zone, headers=headers_time_zone)
+            res = r.json()
+            logger.info("Device API result: {}".format(str(res)))
+            userTimeZone = res
+        except Exception:
+            handler_input.response_builder.speak(
+                "Houve um problema ao conectar com o serviço")
+            return handler_input.response_builder.response
+
+        agora = datetime.datetime.now(timezone(userTimeZone))
+
         for item in jsonObject['rotina']:
             if item['hora'][1] != ':':
                 horario = agora.replace(
@@ -211,11 +210,12 @@ class CriarLembreteIntentHandler(AbstractRequestHandler):
                 horario += datetime.timedelta(days=+1)
             notification_time = horario.strftime("%Y-%m-%dT%H:%M:%S")
             trigger = Trigger(object_type=TriggerType.SCHEDULED_ABSOLUTE, scheduled_time=notification_time,
-                              time_zone_id=TIME_ZONE_ID)#, recurrence=Recurrence(recurrence_rules=recurrence_pattern))
+                              time_zone_id=TIME_ZONE_ID)
             text = SpokenText(
                 locale='pt-BR', ssml="<speak>Otimo! Criei um lembrete para você.</speak>", text="{}".format(item['atividade']))
             alert_info = AlertInfo(AlertInfoSpokenInfo([text]))
-            push_notification = PushNotification(PushNotificationStatus.ENABLED)
+            push_notification = PushNotification(
+                PushNotificationStatus.ENABLED)
             reminder_request = ReminderRequest(
                 notification_time, trigger, alert_info, push_notification)
             try:
@@ -240,8 +240,8 @@ class ConnectionsResponseHandler(AbstractRequestHandler):
 
         response_payload = handler_input.resquest_envelope.resquest.payload
         response_status = response_payload['status']
-        
-        #logger.info("Status value is --> {}".format(response_status))
+
+        logger.info("Status value is --> {}".format(response_status))
 
         if (response_status == 'NOT_ANSWERED'):
             return handler_input.response_builder.speak(
@@ -376,7 +376,8 @@ class LoggingRequestInterceptor(AbstractRequestInterceptor):
 
     def process(self, handler_input):
         # type: (HandlerInput) -> None
-        logger.info("Request Received : {}".format(handler_input.request_envelope))
+        logger.info("Request Received : {}".format(
+            handler_input.request_envelope))
 
 
 class LoggingResponseInterceptor(AbstractResponseInterceptor):
@@ -398,7 +399,6 @@ sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
 sb.add_request_handler(FallbackIntentHandler())
 sb.add_request_handler(SessionEndedRequestHandler())
-# make sure IntentReflectorHandler is last so it doesn't override your custom intent handlers
 sb.add_request_handler(IntentReflectorHandler())
 
 sb.add_exception_handler(CatchAllExceptionHandler())
