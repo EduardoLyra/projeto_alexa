@@ -95,9 +95,9 @@ class AgendaIntentHandler(AbstractRequestHandler):
         if prox == 'próximo':
             for item in jsonObject['rotina']:
                 h = Time()
-                atividade, horaItem = h.verifica_proximo(item, hora, minuto)
-            speak_output = "A sua próxima atividade é {atividade} às {horaItem}.".format(
-                atividade=atividade, horaItem=horaItem)
+                atividade, hora_item = h.verifica_proximo(item, hora, minuto)
+            speak_output = "A sua próxima atividade é {atividade} às {hora_item}.".format(
+                atividade=atividade, hora_item=hora_item)
         else:
             ano_desejado, mes_desejado, dia_desejado = slots.split("-")
             difDia = int(dia_desejado) - dia
@@ -114,9 +114,9 @@ class AgendaIntentHandler(AbstractRequestHandler):
                 speak_output = "A sua rotina de ontem foi {rotina}".format(
                     rotina=rotina)
             else:
-                diaFinal = dia + difDia
-                speak_output = "A sua rotida do dia {diaFinal} é {rotina}".format(
-                    diaFinal=diaFinal, rotina=rotina)
+                dia_final = dia + difDia
+                speak_output = "A sua rotida do dia {dia_final} é {rotina}".format(
+                    dia_final=dia_final, rotina=rotina)
         return (
             handler_input.response_builder
             .speak(speak_output)
@@ -138,7 +138,7 @@ class CriarLembreteIntentHandler(AbstractRequestHandler):
         reminder_service = handler_input.service_client_factory.get_reminder_management_service()
 
         t = Token()
-        url_reminder, headers_reminder = t.reminder(handler_input)
+        t.reminder(handler_input)
         userTimeZone = t.time_zone(handler_input)
 
         if userTimeZone == "ERROR":
@@ -172,7 +172,7 @@ class CriarLembreteIntentHandler(AbstractRequestHandler):
             trigger = Trigger(object_type=TriggerType.SCHEDULED_ABSOLUTE, scheduled_time=notification_time,
                               time_zone_id=TIME_ZONE_ID)
             text = SpokenText(
-                locale='pt-BR', ssml="<speak>Otimo! Criei um lembrete para você.</speak>", text="{}".format(item['atividade']))
+                locale='pt-BR', ssml="<speak>Ótimo! Criei um lembrete para você.</speak>", text="{}".format(item['atividade']))
             alert_info = AlertInfo(AlertInfoSpokenInfo([text]))
             push_notification = PushNotification(
                 PushNotificationStatus.ENABLED)

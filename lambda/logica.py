@@ -24,23 +24,23 @@ class Time:
             min_json = int(item['hora'][3] + item['hora'][4])
             if hora_json > hora:
                 atividade = item['atividade']
-                horaItem = item['hora']
-                return atividade, horaItem
+                hora_item = item['hora']
+                return atividade, hora_item
 
             elif hora_json == hora and min_json > minuto:
                 atividade = item['atividade']
-                horaItem = item['hora']
-                return atividade, horaItem
+                hora_item = item['hora']
+                return atividade, hora_item
 
         else:
             hora_json = int(item['hora'][0])
             min_json = int(item['hora'][2] + item['hora'][3])
             if hora_json > hora:
                 atividade = item['atividade']
-                horaItem = item['hora']
-                return atividade, horaItem
+                hora_item = item['hora']
+                return atividade, hora_item
 
             elif hora_json == hora and min_json > minuto:
                 atividade = item['atividade']
-                horaItem = item['hora']
-                return atividade, horaItem
+                hora_item = item['hora']
+                return atividade, hora_item
